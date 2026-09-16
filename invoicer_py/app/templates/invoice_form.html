@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}New Invoice — Invoicer{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">New invoice</h1>
+
+<form method="POST" class="bg-white p-6 rounded shadow space-y-6" id="invoice-form">
+  <div class="grid grid-cols-3 gap-4">
+    <div>
+      <label class="block text-sm font-medium mb-1">Customer</label>
+      <select name="customer_id" required class="w-full border rounded px-3 py-2">
+        <option value="">Select customer</option>
+        {% for c in customers %}
+        <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Due date</label>
+      <input type="date" name="due_date" class="w-full border rounded px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Discount (%)</label>
+      <input type="number" step="0.01" name="discount_percent" value="0" id="discount" class="w-full border rounded px-3 py-2">
+    </div>
+  </div>
+
+  {% if products %}
+  <div>
+    <label class="block text-sm font-medium mb-1">Quick-add a product</label>
+    <select id="product-picker" class="w-full border rounded px-3 py-2">
+      <option value="">Select a product to add a line...</option>
+      {% for p in products %}
+      <option value="{{ p.id }}" data-name="{{ p.name }}" data-price="{{ p.unit_price }}" data-tax="{{ p.tax_rate }}">
+        {{ p.name }} — {{ "%.2f"|format(p.unit_price) }} ({{ p.tax_rate }}% tax)
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+
+  <div>
+    <table class="w-full text-sm" id="items-table">
+      <thead class="text-left text-gray-500">
+        <tr>
+          <th class="py-1">Description</th>
+          <th class="py-1 w-20">Qty</th>
+          <th class="py-1 w-28">Unit price</th>
+          <th class="py-1 w-24">Tax %</th>
+          <th class="py-1 w-28 text-right">Line total</th>
+          <th class="py-1 w-10"></th>
+        </tr>
+      </thead>
+      <tbody id="items-body"></tbody>
+    </table>
+    <button type="button" id="add-row" class="mt-3 text-sm text-blue-600 hover:underline">+ Add line item</button>
+  </div>
+
+  <div class="flex justify-end">
+    <div class="w-64 space-y-1 text-sm">
+      <div class="flex justify-between"><span>Subtotal</span><span id="calc-subtotal">0.00</span></div>
+      <div class="flex justify-between"><span>Tax</span><span id="calc-tax">0.00</span></div>
+      <div class="flex justify-between"><span>Discount</span><span id="calc-discount">0.00</span></div>
+      <div class="flex justify-between font-bold text-base border-t pt-1"><span>Total</span><span id="calc-total">0.00</span></div>
+    </div>
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium mb-1">Notes</label>
+    <textarea name="notes" class="w-full border rounded px-3 py-2"></textarea>
+  </div>
+
+  <button type="submit" class="bg-gray-900 text-white px-4 py-2 rounded">Create invoice</button>
+</form>
+
+<template id="row-template">
+  <tr class="border-t">
+    <td class="py-1 pr-2"><input type="text" name="item_description" class="w-full border rounded px-2 py-1" required></td>
+    <td class="py-1 pr-2"><input type="number" step="0.01" name="item_quantity" value="1" class="w-full border rounded px-2 py-1 qty"></td>
+    <td class="py-1 pr-2"><input type="number" step="0.01" name="item_unit_price" value="0" class="w-full border rounded px-2 py-1 price"></td>
+    <td class="py-1 pr-2"><input type="number" step="0.01" name="item_tax_rate" value="0" class="w-full border rounded px-2 py-1 tax"></td>
+    <td class="py-1 pr-2 text-right line-total">0.00</td>
+    <td class="py-1"><button type="button" class="remove-row text-red-500">✕</button></td>
+  </tr>
+</template>
+
+<script>
+  const itemsBody = document.getElementById('items-body');
+  const rowTemplate = document.getElementById('row-template');
+  const discountInput = document.getElementById('discount');
+
+  function addRow(name = '', price = 0, tax = 0) {
+    const clone = rowTemplate.content.cloneNode(true);
+    if (name) clone.querySelector('[name="item_description"]').value = name;
+    if (price) clone.querySelector('.price').value = price;
+    if (tax) clone.querySelector('.tax').value = tax;
+    itemsBody.appendChild(clone);
+    recalculate();
+  }
+
+  document.getElementById('add-row').addEventListener('click', () => addRow());
+
+  document.getElementById('product-picker').addEventListener('change', (e) => {
+    const opt = e.target.selectedOptions[0];
+    if (opt && opt.value) {
+      addRow(opt.dataset.name, opt.dataset.price, opt.dataset.tax);
+      e.target.value = '';
+    }
+  });
+
+  itemsBody.addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove-row')) {
+      e.target.closest('tr').remove();
+      recalculate();
+    }
+  });
+
+  itemsBody.addEventListener('input', recalculate);
+  discountInput.addEventListener('input', recalculate);
+
+  function recalculate() {
+    let subtotal = 0;
+    let tax = 0;
+    itemsBody.querySelectorAll('tr').forEach(row => {
+      const qty = parseFloat(row.querySelector('.qty').value) || 0;
+      const price = parseFloat(row.querySelector('.price').value) || 0;
+      const taxRate = parseFloat(row.querySelector('.tax').value) || 0;
+      const lineSubtotal = qty * price;
+      const lineTax = lineSubtotal * taxRate / 100;
+      row.querySelector('.line-total').textContent = (lineSubtotal + lineTax).toFixed(2);
+      subtotal += lineSubtotal;
+      tax += lineTax;
+    });
+    const discountPercent = parseFloat(discountInput.value) || 0;
+    const discountAmount = (subtotal + tax) * discountPercent / 100;
+    const total = subtotal + tax - discountAmount;
+
+    document.getElementById('calc-subtotal').textContent = subtotal.toFixed(2);
+    document.getElementById('calc-tax').textContent = tax.toFixed(2);
+    document.getElementById('calc-discount').textContent = discountAmount.toFixed(2);
+    document.getElementById('calc-total').textContent = total.toFixed(2);
+  }
+
+  // start with one empty row
+  addRow();
+</script>
+{% endblock %}

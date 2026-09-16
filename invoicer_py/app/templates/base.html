@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Invoicer{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+  {% if current_user.is_authenticated %}
+  <nav class="bg-gray-900 text-white px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <a href="{{ url_for('main.dashboard') }}" class="font-bold text-lg">Invoicer</a>
+      <a href="{{ url_for('main.quick_sale') }}" class="text-sm bg-green-600 px-2 py-1 rounded text-white hover:bg-green-500">⚡ Quick Sale</a>
+      <a href="{{ url_for('main.dashboard') }}" class="text-sm text-gray-300 hover:text-white">Dashboard</a>
+      <a href="{{ url_for('main.customers') }}" class="text-sm text-gray-300 hover:text-white">Customers</a>
+      <a href="{{ url_for('main.products') }}" class="text-sm text-gray-300 hover:text-white">Products</a>
+      <a href="{{ url_for('main.invoices') }}" class="text-sm text-gray-300 hover:text-white">Invoices</a>
+      <a href="{{ url_for('main.expenses') }}" class="text-sm text-gray-300 hover:text-white">Expenses</a>
+    </div>
+    <div class="flex items-center gap-4 text-sm">
+      <span class="text-gray-400">{{ current_user.name }}</span>
+      <a href="{{ url_for('auth.logout') }}" class="text-gray-300 hover:text-white">Logout</a>
+    </div>
+  </nav>
+  {% endif %}
+
+  <main class="flex-1 max-w-6xl w-full mx-auto px-6 py-8">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-6 space-y-2">
+          {% for category, message in messages %}
+            <div class="px-4 py-2 rounded text-sm
+              {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-green-100 text-green-700 {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

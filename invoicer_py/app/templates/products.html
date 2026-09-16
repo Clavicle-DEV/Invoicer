@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Products — Invoicer{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Products & Services</h1>
+  <a href="{{ url_for('main.new_product') }}" class="bg-gray-900 text-white px-4 py-2 rounded text-sm">+ Add product</a>
+</div>
+
+<form method="GET" class="mb-4">
+  <input type="text" name="q" value="{{ q }}" placeholder="Search products..." class="border rounded px-3 py-2 w-72">
+</form>
+
+<div class="bg-white rounded shadow overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-gray-100 text-left">
+      <tr>
+        <th class="px-4 py-2">Name</th>
+        <th class="px-4 py-2">Description</th>
+        <th class="px-4 py-2 text-right">Unit Price</th>
+        <th class="px-4 py-2 text-right">Tax %</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr class="border-t">
+        <td class="px-4 py-2 font-medium">{{ p.name }}</td>
+        <td class="px-4 py-2">{{ p.description or "-" }}</td>
+        <td class="px-4 py-2 text-right">{{ "%.2f"|format(p.unit_price) }}</td>
+        <td class="px-4 py-2 text-right">{{ p.tax_rate }}%</td>
+      </tr>
+      {% else %}
+      <tr><td class="px-4 py-4 text-gray-400" colspan="4">No products yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

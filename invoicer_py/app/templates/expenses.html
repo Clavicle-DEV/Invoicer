@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Expenses — Invoicer{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Expenses</h1>
+  <a href="{{ url_for('main.new_expense') }}" class="bg-gray-900 text-white px-4 py-2 rounded text-sm">+ Record expense</a>
+</div>
+
+<form method="GET" class="flex gap-3 mb-4">
+  <input type="text" name="q" value="{{ q }}" placeholder="Search description..." class="border rounded px-3 py-2 w-72">
+  <select name="category" class="border rounded px-3 py-2">
+    <option value="">All categories</option>
+    {% for c in categories %}
+    <option value="{{ c }}" {% if category == c %}selected{% endif %}>{{ c }}</option>
+    {% endfor %}
+  </select>
+  <button class="bg-gray-200 px-4 py-2 rounded text-sm">Filter</button>
+</form>
+
+<div class="bg-white rounded shadow overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-gray-100 text-left">
+      <tr>
+        <th class="px-4 py-2">Date</th>
+        <th class="px-4 py-2">Category</th>
+        <th class="px-4 py-2">Description</th>
+        <th class="px-4 py-2 text-right">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in expenses %}
+      <tr class="border-t">
+        <td class="px-4 py-2">{{ e.date }}</td>
+        <td class="px-4 py-2">{{ e.category }}</td>
+        <td class="px-4 py-2">{{ e.description or "-" }}</td>
+        <td class="px-4 py-2 text-right">{{ "%.2f"|format(e.amount) }}</td>
+      </tr>
+      {% else %}
+      <tr><td class="px-4 py-4 text-gray-400" colspan="4">No expenses recorded yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

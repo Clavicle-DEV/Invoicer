@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+{% block title %}Quick Sale — Invoicer{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-bold">Quick Sale</h1>
+  <p class="text-sm text-gray-500">Tap an item, or speak the order when your hands are full.</p>
+</div>
+
+<div id="voice-panel" class="bg-white rounded-lg shadow p-4 mb-6 hidden">
+  <div class="flex items-center justify-between mb-2">
+    <h2 class="font-semibold text-sm">🎤 Voice order</h2>
+    <button id="voice-btn" type="button" class="bg-gray-900 text-white px-4 py-1.5 rounded text-sm">
+      Start listening
+    </button>
+  </div>
+  <p id="voice-status" class="text-xs text-gray-400 mb-2">Try: "two sugars, one milk, and one bread"</p>
+  <p id="voice-transcript" class="text-sm text-gray-700 italic min-h-[1.5rem]"></p>
+
+  <div id="voice-review" class="hidden mt-3 border-t pt-3">
+    <p class="text-xs text-gray-500 mb-2">Heard this — check it's right before adding:</p>
+    <div id="voice-review-list" class="space-y-2 mb-3"></div>
+    <div class="flex gap-2">
+      <button id="voice-add-btn" class="bg-green-600 text-white px-3 py-1.5 rounded text-sm">Add to cart</button>
+      <button id="voice-discard-btn" class="text-sm text-gray-500 hover:text-red-600">Discard</button>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Product grid -->
+  <div class="lg:col-span-2">
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="product-grid">
+      {% for p in products %}
+      <button
+        type="button"
+        class="product-tile bg-white border rounded-lg p-4 text-left hover:border-gray-900 hover:shadow transition"
+        data-id="{{ p.id }}"
+        data-name="{{ p.name }}"
+        data-price="{{ p.unit_price }}"
+        data-tax="{{ p.tax_rate }}"
+      >
+        <p class="font-medium">{{ p.name }}</p>
+        <p class="text-sm text-gray-500">{{ "%.2f"|format(p.unit_price) }}</p>
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Cart -->
+  <div class="bg-white rounded-lg shadow p-4 h-fit sticky top-4">
+    <h2 class="font-semibold mb-3">Current sale</h2>
+
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">Customer (optional — defaults to Walk-in)</label>
+      <select id="customer-select" class="w-full border rounded px-2 py-1.5 text-sm mb-3">
+        <option value="">Walk-in customer</option>
+        {% for c in customers %}
+          {% if c.name != "Walk-in Customer" %}
+          <option value="{{ c.id }}">{{ c.name }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+
+    <div id="cart-items" class="space-y-2 mb-4 max-h-80 overflow-y-auto">
+      <p id="cart-empty" class="text-sm text-gray-400">No items yet — tap a product.</p>
+    </div>
+
+    <div class="border-t pt-3 flex justify-between font-bold mb-4">
+      <span>Total</span>
+      <span id="cart-total">0.00</span>
+    </div>
+
+    <button id="checkout-btn" disabled
+      class="w-full bg-gray-900 text-white py-2.5 rounded font-medium disabled:opacity-40">
+      Complete sale
+    </button>
+    <button id="clear-btn" class="w-full mt-2 text-sm text-gray-500 hover:text-red-600">Clear cart</button>
+
+    <div id="last-sale" class="mt-4 text-sm hidden"></div>
+  </div>
+</div>
+
+<script>
+  const cart = {}; // product_id -> {name, price, tax, qty}
+  const cartItemsEl = document.getElementById('cart-items');
+  const cartEmptyEl = document.getElementById('cart-empty');
+  const cartTotalEl = document.getElementById('cart-total');
+  const checkoutBtn = document.getElementById('checkout-btn');
+  const lastSaleEl = document.getElementById('last-sale');
+
+  function lineTotal(item) {
+    const subtotal = item.qty * item.price;
+    return subtotal + subtotal * (item.tax / 100);
+  }
+
+  function render() {
+    const ids = Object.keys(cart);
+    cartEmptyEl.classList.toggle('hidden', ids.length > 0);
+    cartItemsEl.querySelectorAll('.cart-row').forEach(el => el.remove());
+
+    let total = 0;
+    ids.forEach(id => {
+      const item = cart[id];
+      total += lineTotal(item);
+
+      const row = document.createElement('div');
+      row.className = 'cart-row flex items-center justify-between text-sm bg-gray-50 rounded px-2 py-1.5';
+      row.innerHTML = `
+        <div>
+          <p class="font-medium">${item.name}</p>
+          <p class="text-gray-500">${item.qty} × ${item.price.toFixed(2)}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="qty-btn px-2 bg-gray-200 rounded" data-id="${id}" data-delta="-1">−</button>
+          <button class="qty-btn px-2 bg-gray-200 rounded" data-id="${id}" data-delta="1">+</button>
+          <button class="remove-btn text-red-500 ml-1" data-id="${id}">✕</button>
+        </div>
+      `;
+      cartItemsEl.appendChild(row);
+    });
+
+    cartTotalEl.textContent = total.toFixed(2);
+    checkoutBtn.disabled = ids.length === 0;
+  }
+
+  document.getElementById('product-grid').addEventListener('click', (e) => {
+    const tile = e.target.closest('.product-tile');
+    if (!tile) return;
+    const id = tile.dataset.id;
+    if (!cart[id]) {
+      cart[id] = {
+        name: tile.dataset.name,
+        price: parseFloat(tile.dataset.price),
+        tax: parseFloat(tile.dataset.tax),
+        qty: 0,
+      };
+    }
+    cart[id].qty += 1;
+    lastSaleEl.classList.add('hidden');
+    render();
+  });
+
+  cartItemsEl.addEventListener('click', (e) => {
+    const qtyBtn = e.target.closest('.qty-btn');
+    const removeBtn = e.target.closest('.remove-btn');
+    if (qtyBtn) {
+      const id = qtyBtn.dataset.id;
+      cart[id].qty += parseInt(qtyBtn.dataset.delta);
+      if (cart[id].qty <= 0) delete cart[id];
+      render();
+    } else if (removeBtn) {
+      delete cart[removeBtn.dataset.id];
+      render();
+    }
+  });
+
+  document.getElementById('clear-btn').addEventListener('click', () => {
+    Object.keys(cart).forEach(id => delete cart[id]);
+    lastSaleEl.classList.add('hidden');
+    render();
+  });
+
+  checkoutBtn.addEventListener('click', async () => {
+    const items = Object.entries(cart).map(([product_id, item]) => ({
+      product_id: parseInt(product_id),
+      quantity: item.qty,
+    }));
+    const customerId = document.getElementById('customer-select').value;
+
+    checkoutBtn.disabled = true;
+    checkoutBtn.textContent = 'Recording...';
+
+    try {
+      const res = await fetch('/api/quick-sale', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items, customer_id: customerId || null }),
+      });
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert(result.error || 'Something went wrong.');
+        checkoutBtn.disabled = false;
+        checkoutBtn.textContent = 'Complete sale';
+        return;
+      }
+
+      lastSaleEl.innerHTML = `
+        <div class="bg-green-50 border border-green-200 rounded p-3">
+          <p class="font-medium text-green-800">Sale recorded — ${result.invoice_number}</p>
+          <p class="text-green-700">${result.customer_name} · Total ${result.total.toFixed(2)}</p>
+          <div class="mt-2 flex gap-3">
+            <a href="${result.pdf_url}" target="_blank" class="text-blue-600 hover:underline">Download receipt</a>
+            <a href="${result.detail_url}" class="text-blue-600 hover:underline">View invoice</a>
+          </div>
+        </div>`;
+      lastSaleEl.classList.remove('hidden');
+
+      // reset cart instantly so the cashier can serve the next person right away
+      Object.keys(cart).forEach(id => delete cart[id]);
+      document.getElementById('customer-select').value = '';
+      render();
+    } catch (err) {
+      alert('Network error — the sale was not saved. Try again.');
+    } finally {
+      checkoutBtn.disabled = Object.keys(cart).length === 0;
+      checkoutBtn.textContent = 'Complete sale';
+    }
+  });
+
+  render();
+
+  // ---------- Voice ordering ----------
+
+  const NUMBER_WORDS = {
+    a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5,
+    six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
+  };
+  const FILLER_WORDS = new Set(['and', 'also', 'then', 'please', 'plus', 'with', 'me', 'i', 'want', 'get']);
+
+  function getCatalog() {
+    return Array.from(document.querySelectorAll('.product-tile')).map(tile => ({
+      id: tile.dataset.id,
+      name: tile.dataset.name,
+      price: parseFloat(tile.dataset.price),
+      tax: parseFloat(tile.dataset.tax),
+      nameLower: tile.dataset.name.toLowerCase(),
+    }));
+  }
+
+  function normalize(text) {
+    return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+  }
+
+  function parseTranscriptToChunks(transcript) {
+    const tokens = normalize(transcript).split(/\s+/).filter(Boolean);
+    const chunks = [];
+    let current = null;
+
+    tokens.forEach(token => {
+      const num = NUMBER_WORDS[token] ?? (/^\d+$/.test(token) ? parseInt(token, 10) : null);
+      if (num !== null) {
+        if (current) chunks.push(current);
+        current = { qty: num, words: [] };
+      } else if (FILLER_WORDS.has(token)) {
+        // skip filler words entirely
+      } else {
+        if (!current) current = { qty: 1, words: [] };
+        current.words.push(token);
+      }
+    });
+    if (current) chunks.push(current);
+    return chunks.filter(c => c.words.length > 0);
+  }
+
+  function matchProduct(words, catalog) {
+    const candidate = words.join(' ');
+    const candidateSingular = candidate.replace(/s$/, '');
+    let best = null;
+    let bestScore = 0;
+
+    catalog.forEach(product => {
+      const nameSingular = product.nameLower.replace(/s$/, '');
+      let score = 0;
+      if (candidate === product.nameLower) score = 100;
+      else if (candidateSingular === nameSingular) score = 90;
+      else if (product.nameLower.includes(candidate) || candidate.includes(product.nameLower)) score = 75;
+      else {
+        const candWords = new Set(candidate.split(' '));
+        const nameWords = product.nameLower.split(' ');
+        const overlap = nameWords.filter(w => candWords.has(w)).length;
+        score = nameWords.length ? (overlap / nameWords.length) * 60 : 0;
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        best = product;
+      }
+    });
+
+    return { product: bestScore >= 50 ? best : null, candidateText: candidate, score: bestScore };
+  }
+
+  const voicePanel = document.getElementById('voice-panel');
+  const voiceBtn = document.getElementById('voice-btn');
+  const voiceStatus = document.getElementById('voice-status');
+  const voiceTranscript = document.getElementById('voice-transcript');
+  const voiceReview = document.getElementById('voice-review');
+  const voiceReviewList = document.getElementById('voice-review-list');
+  let pendingVoiceItems = [];
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (SpeechRecognition) {
+    voicePanel.classList.remove('hidden');
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    let listening = false;
+
+    recognition.onstart = () => {
+      listening = true;
+      voiceBtn.textContent = 'Stop';
+      voiceStatus.textContent = 'Listening...';
+    };
+
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      voiceTranscript.textContent = transcript;
+    };
+
+    recognition.onend = () => {
+      listening = false;
+      voiceBtn.textContent = 'Start listening';
+      voiceStatus.textContent = 'Try: "two sugars, one milk, and one bread"';
+      const finalTranscript = voiceTranscript.textContent.trim();
+      if (finalTranscript) processVoiceOrder(finalTranscript);
+    };
+
+    recognition.onerror = (event) => {
+      voiceStatus.textContent = 'Could not hear that (' + event.error + '). Try again.';
+    };
+
+    voiceBtn.addEventListener('click', () => {
+      if (listening) {
+        recognition.stop();
+      } else {
+        voiceTranscript.textContent = '';
+        voiceReview.classList.add('hidden');
+        recognition.start();
+      }
+    });
+  } else {
+    voicePanel.classList.add('hidden'); // browser doesn't support it — tapping still works fine
+  }
+
+  function processVoiceOrder(transcript) {
+    const catalog = getCatalog();
+    const chunks = parseTranscriptToChunks(transcript);
+    pendingVoiceItems = chunks.map(chunk => {
+      const { product, candidateText } = matchProduct(chunk.words, catalog);
+      return { qty: chunk.qty, product, candidateText };
+    });
+
+    if (pendingVoiceItems.length === 0) {
+      voiceStatus.textContent = "Didn't catch any items — try again.";
+      return;
+    }
+
+    renderVoiceReview(catalog);
+  }
+
+  function renderVoiceReview(catalog) {
+    voiceReviewList.innerHTML = '';
+    pendingVoiceItems.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 text-sm';
+      const options = catalog.map(p =>
+        `<option value="${p.id}" ${item.product && item.product.id === p.id ? 'selected' : ''}>${p.name}</option>`
+      ).join('');
+      row.innerHTML = `
+        <span class="w-10 text-gray-500">×${item.qty}</span>
+        <span class="w-28 ${item.product ? '' : 'text-red-500'}">${item.product ? '' : '"' + item.candidateText + '" — pick:'}</span>
+        <select data-idx="${idx}" class="voice-product-select border rounded px-2 py-1 flex-1">
+          <option value="">Skip this item</option>
+          ${options}
+        </select>
+      `;
+      voiceReviewList.appendChild(row);
+    });
+    voiceReview.classList.remove('hidden');
+  }
+
+  voiceReviewList.addEventListener('change', (e) => {
+    if (e.target.classList.contains('voice-product-select')) {
+      const idx = parseInt(e.target.dataset.idx);
+      const catalog = getCatalog();
+      const selectedId = e.target.value;
+      pendingVoiceItems[idx].product = selectedId ? catalog.find(p => p.id === selectedId) : null;
+    }
+  });
+
+  document.getElementById('voice-add-btn').addEventListener('click', () => {
+    pendingVoiceItems.forEach(item => {
+      if (!item.product) return;
+      const id = item.product.id;
+      if (!cart[id]) {
+        cart[id] = { name: item.product.name, price: item.product.price, tax: item.product.tax, qty: 0 };
+      }
+      cart[id].qty += item.qty;
+    });
+    voiceReview.classList.add('hidden');
+    voiceTranscript.textContent = '';
+    lastSaleEl.classList.add('hidden');
+    render();
+  });
+
+  document.getElementById('voice-discard-btn').addEventListener('click', () => {
+    voiceReview.classList.add('hidden');
+    voiceTranscript.textContent = '';
+  });
+</script>
+{% endblock %}

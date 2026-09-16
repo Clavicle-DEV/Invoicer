@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Customers — Invoicer{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Customers</h1>
+  <a href="{{ url_for('main.new_customer') }}" class="bg-gray-900 text-white px-4 py-2 rounded text-sm">+ Add customer</a>
+</div>
+
+<form method="GET" class="mb-4">
+  <input type="text" name="q" value="{{ q }}" placeholder="Search customers..." class="border rounded px-3 py-2 w-72">
+</form>
+
+<div class="bg-white rounded shadow overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-gray-100 text-left">
+      <tr>
+        <th class="px-4 py-2">Name</th>
+        <th class="px-4 py-2">Email</th>
+        <th class="px-4 py-2">Phone</th>
+        <th class="px-4 py-2">Address</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in customers %}
+      <tr class="border-t">
+        <td class="px-4 py-2 font-medium">{{ c.name }}</td>
+        <td class="px-4 py-2">{{ c.email or "-" }}</td>
+        <td class="px-4 py-2">{{ c.phone or "-" }}</td>
+        <td class="px-4 py-2">{{ c.address or "-" }}</td>
+      </tr>
+      {% else %}
+      <tr><td class="px-4 py-4 text-gray-400" colspan="4">No customers yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
