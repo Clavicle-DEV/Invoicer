@@ -1,83 +1,83 @@
 {% extends "base.html" %}
 {% block title %}Dashboard — Invoicer{% endblock %}
 {% block content %}
-<div class="flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-bold">Dashboard</h1>
+<div class="flex items-center justify-between mb-8">
+  <h1 class="font-display text-2xl font-semibold">Dashboard</h1>
   <form method="GET" class="flex items-center gap-2">
-    <label class="text-sm text-gray-500">Year</label>
-    <input type="number" name="year" value="{{ year }}" class="border rounded px-2 py-1 w-24">
-    <button class="text-sm bg-gray-900 text-white px-3 py-1 rounded">Go</button>
+    <label class="text-sm text-ink-soft">Year</label>
+    <input type="number" name="year" value="{{ year }}" class="border border-line rounded-md px-2 py-1 w-24 bg-surface">
+    <button class="text-sm bg-ink text-paper px-3 py-1.5 rounded-md">Go</button>
   </form>
 </div>
 
-<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-  <div class="bg-white p-4 rounded shadow">
-    <p class="text-xs text-gray-500">Total Invoiced</p>
-    <p class="text-xl font-bold">{{ "%.2f"|format(totals.total_invoiced) }}</p>
+<div class="grid grid-cols-2 md:grid-cols-5 gap-0 border border-line rounded-lg overflow-hidden mb-10 bg-surface">
+  <div class="p-5 border-r border-line border-b-4 border-b-ink">
+    <p class="text-xs text-ink-soft mb-1">Total Invoiced</p>
+    <p class="figure text-xl font-semibold">{{ "%.2f"|format(totals.total_invoiced) }}</p>
   </div>
-  <div class="bg-white p-4 rounded shadow">
-    <p class="text-xs text-gray-500">Paid</p>
-    <p class="text-xl font-bold text-green-600">{{ "%.2f"|format(totals.total_paid) }}</p>
+  <div class="p-5 border-r border-line border-b-4 border-b-ledger">
+    <p class="text-xs text-ink-soft mb-1">Paid</p>
+    <p class="figure text-xl font-semibold text-ledger">{{ "%.2f"|format(totals.total_paid) }}</p>
   </div>
-  <div class="bg-white p-4 rounded shadow">
-    <p class="text-xs text-gray-500">Unpaid</p>
-    <p class="text-xl font-bold text-red-600">{{ "%.2f"|format(totals.total_unpaid) }}</p>
+  <div class="p-5 border-r border-line border-b-4 border-b-gold">
+    <p class="text-xs text-ink-soft mb-1">Unpaid</p>
+    <p class="figure text-xl font-semibold text-gold">{{ "%.2f"|format(totals.total_unpaid) }}</p>
   </div>
-  <div class="bg-white p-4 rounded shadow">
-    <p class="text-xs text-gray-500">Expenses</p>
-    <p class="text-xl font-bold text-orange-600">{{ "%.2f"|format(totals.total_expenses) }}</p>
+  <div class="p-5 border-r border-line border-b-4 border-b-rust">
+    <p class="text-xs text-ink-soft mb-1">Expenses</p>
+    <p class="figure text-xl font-semibold text-rust">{{ "%.2f"|format(totals.total_expenses) }}</p>
   </div>
-  <div class="bg-white p-4 rounded shadow">
-    <p class="text-xs text-gray-500">Net (paid - expenses)</p>
-    <p class="text-xl font-bold">{{ "%.2f"|format(totals.net) }}</p>
+  <div class="p-5 border-b-4 border-b-ink">
+    <p class="text-xs text-ink-soft mb-1">Net (paid − expenses)</p>
+    <p class="figure text-xl font-semibold">{{ "%.2f"|format(totals.net) }}</p>
   </div>
 </div>
 
-<div class="bg-white rounded shadow overflow-hidden mb-8">
+<div class="bg-surface rounded-lg border border-line overflow-hidden mb-10">
   <table class="w-full text-sm">
-    <thead class="bg-gray-100 text-left">
+    <thead class="bg-paper-alt text-left">
       <tr>
-        <th class="px-4 py-2">Month</th>
-        <th class="px-4 py-2 text-right">Revenue</th>
-        <th class="px-4 py-2 text-right">Expenses</th>
-        <th class="px-4 py-2 text-right">Net</th>
+        <th class="px-4 py-2 font-medium text-ink-soft">Month</th>
+        <th class="px-4 py-2 font-medium text-ink-soft text-right">Revenue</th>
+        <th class="px-4 py-2 font-medium text-ink-soft text-right">Expenses</th>
+        <th class="px-4 py-2 font-medium text-ink-soft text-right">Net</th>
       </tr>
     </thead>
     <tbody>
       {% set month_names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"] %}
       {% for m, data in months.items() %}
-      <tr class="border-t">
+      <tr class="border-t border-line">
         <td class="px-4 py-2">{{ month_names[m-1] }}</td>
-        <td class="px-4 py-2 text-right text-green-700">{{ "%.2f"|format(data.revenue) }}</td>
-        <td class="px-4 py-2 text-right text-orange-700">{{ "%.2f"|format(data.expenses) }}</td>
-        <td class="px-4 py-2 text-right font-medium">{{ "%.2f"|format(data.net) }}</td>
+        <td class="figure px-4 py-2 text-right text-ledger">{{ "%.2f"|format(data.revenue) }}</td>
+        <td class="figure px-4 py-2 text-right text-rust">{{ "%.2f"|format(data.expenses) }}</td>
+        <td class="figure px-4 py-2 text-right font-semibold">{{ "%.2f"|format(data.net) }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
 
-<h2 class="text-lg font-semibold mb-3">Recent invoices</h2>
-<div class="bg-white rounded shadow overflow-hidden">
+<h2 class="font-display text-lg font-semibold mb-3">Recent invoices</h2>
+<div class="bg-surface rounded-lg border border-line overflow-hidden">
   <table class="w-full text-sm">
-    <thead class="bg-gray-100 text-left">
+    <thead class="bg-paper-alt text-left">
       <tr>
-        <th class="px-4 py-2">#</th>
-        <th class="px-4 py-2">Customer</th>
-        <th class="px-4 py-2">Status</th>
-        <th class="px-4 py-2 text-right">Total</th>
+        <th class="px-4 py-2 font-medium text-ink-soft">#</th>
+        <th class="px-4 py-2 font-medium text-ink-soft">Customer</th>
+        <th class="px-4 py-2 font-medium text-ink-soft">Status</th>
+        <th class="px-4 py-2 font-medium text-ink-soft text-right">Total</th>
       </tr>
     </thead>
     <tbody>
       {% for inv in recent_invoices %}
-      <tr class="border-t hover:bg-gray-50">
-        <td class="px-4 py-2"><a class="text-blue-600 hover:underline" href="{{ url_for('main.invoice_detail', invoice_id=inv.id) }}">{{ inv.invoice_number }}</a></td>
+      <tr class="border-t border-line hover:bg-paper-alt/40">
+        <td class="figure px-4 py-2"><a class="text-ledger hover:underline" href="{{ url_for('main.invoice_detail', invoice_id=inv.id) }}">{{ inv.invoice_number }}</a></td>
         <td class="px-4 py-2">{{ inv.customer.name }}</td>
         <td class="px-4 py-2 capitalize">{{ inv.status }}</td>
-        <td class="px-4 py-2 text-right">{{ "%.2f"|format(inv.total) }}</td>
+        <td class="figure px-4 py-2 text-right">{{ "%.2f"|format(inv.total) }}</td>
       </tr>
       {% else %}
-      <tr><td class="px-4 py-4 text-gray-400" colspan="4">No invoices yet.</td></tr>
+      <tr><td class="px-4 py-4 text-ink-soft" colspan="4">No invoices yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>

@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Record Expense — Invoicer{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-bold mb-6">Record expense</h1>
-<form method="POST" class="bg-white p-6 rounded shadow max-w-lg space-y-4">
+<h1 class="font-display text-2xl font-semibold mb-6">Record expense</h1>
+<form method="POST" class="bg-surface p-6 rounded-lg border border-line max-w-lg space-y-4">
   <div>
     <label class="block text-sm font-medium mb-1">Category</label>
-    <input type="text" name="category" placeholder="e.g. Rent, Supplies, Utilities" required class="w-full border rounded px-3 py-2">
+    <input type="text" name="category" placeholder="e.g. Rent, Supplies, Utilities" required class="w-full border border-line rounded-md px-3 py-2 bg-surface focus:border-ink outline-none">
   </div>
   <div>
     <label class="block text-sm font-medium mb-1">Description</label>
-    <input type="text" name="description" class="w-full border rounded px-3 py-2">
+    <input type="text" name="description" class="w-full border border-line rounded-md px-3 py-2 bg-surface focus:border-ink outline-none">
   </div>
   <div class="grid grid-cols-2 gap-4">
     <div>
       <label class="block text-sm font-medium mb-1">Amount</label>
-      <input type="number" step="0.01" name="amount" required class="w-full border rounded px-3 py-2">
+      <input type="number" step="0.01" name="amount" required class="w-full border border-line rounded-md px-3 py-2 bg-surface focus:border-ink outline-none">
     </div>
     <div>
       <label class="block text-sm font-medium mb-1">Date</label>
-      <input type="date" name="date" class="w-full border rounded px-3 py-2">
+      <input type="date" name="date" class="w-full border border-line rounded-md px-3 py-2 bg-surface focus:border-ink outline-none">
     </div>
   </div>
-  <button type="submit" class="bg-gray-900 text-white px-4 py-2 rounded">Save expense</button>
+  <button type="submit" class="bg-ink text-paper px-4 py-2 rounded-md font-medium">Save expense</button>
 </form>
 {% endblock %}

@@ -2,47 +2,57 @@
 {% block title %}Invoice {{ invoice.invoice_number }} — Invoicer{% endblock %}
 {% block content %}
 <div class="flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-bold">Invoice {{ invoice.invoice_number }}</h1>
-  <div class="flex gap-2">
-    <a href="{{ url_for('main.invoice_pdf', invoice_id=invoice.id) }}" class="bg-gray-900 text-white px-4 py-2 rounded text-sm">Download PDF</a>
+  <div>
+    <h1 class="figure text-sm text-ink-soft mb-1">Invoice</h1>
+    <h2 class="font-display text-2xl font-semibold">{{ invoice.invoice_number }}</h2>
   </div>
+  <a href="{{ url_for('main.invoice_pdf', invoice_id=invoice.id) }}" class="bg-ink text-paper px-4 py-2 rounded-md text-sm font-medium">Download PDF</a>
 </div>
 
-<div class="bg-white rounded shadow p-6 mb-6">
-  <div class="grid grid-cols-3 gap-6 mb-6 text-sm">
+<div class="bg-surface rounded-lg border border-line p-6 mb-6 relative">
+  <div class="absolute top-6 right-6">
+    <span class="stamp
+      {% if invoice.status == 'paid' %} text-ledger
+      {% elif invoice.status == 'overdue' %} text-rust
+      {% else %} text-gold {% endif %}">
+      {{ invoice.status }}
+    </span>
+  </div>
+
+  <div class="grid grid-cols-3 gap-6 mb-6 text-sm pr-32">
     <div>
-      <p class="text-gray-500">Customer</p>
+      <p class="text-ink-soft">Customer</p>
       <p class="font-medium">{{ invoice.customer.name }}</p>
-      <p class="text-gray-500">{{ invoice.customer.email or "" }}</p>
+      <p class="text-ink-soft">{{ invoice.customer.email or "" }}</p>
     </div>
     <div>
-      <p class="text-gray-500">Issue date</p>
-      <p class="font-medium">{{ invoice.issue_date }}</p>
+      <p class="text-ink-soft">Issue date</p>
+      <p class="figure font-medium">{{ invoice.issue_date }}</p>
     </div>
     <div>
-      <p class="text-gray-500">Due date</p>
-      <p class="font-medium">{{ invoice.due_date or "-" }}</p>
+      <p class="text-ink-soft">Due date</p>
+      <p class="figure font-medium">{{ invoice.due_date or "-" }}</p>
     </div>
   </div>
 
   <table class="w-full text-sm mb-6">
-    <thead class="bg-gray-100 text-left">
+    <thead class="bg-paper-alt text-left">
       <tr>
-        <th class="px-3 py-2">Description</th>
-        <th class="px-3 py-2 text-right">Qty</th>
-        <th class="px-3 py-2 text-right">Unit price</th>
-        <th class="px-3 py-2 text-right">Tax %</th>
-        <th class="px-3 py-2 text-right">Line total</th>
+        <th class="px-3 py-2 font-medium text-ink-soft">Description</th>
+        <th class="px-3 py-2 font-medium text-ink-soft text-right">Qty</th>
+        <th class="px-3 py-2 font-medium text-ink-soft text-right">Unit price</th>
+        <th class="px-3 py-2 font-medium text-ink-soft text-right">Tax %</th>
+        <th class="px-3 py-2 font-medium text-ink-soft text-right">Line total</th>
       </tr>
     </thead>
     <tbody>
       {% for item in invoice.items %}
-      <tr class="border-t">
+      <tr class="border-t border-line">
         <td class="px-3 py-2">{{ item.description }}</td>
-        <td class="px-3 py-2 text-right">{{ item.quantity }}</td>
-        <td class="px-3 py-2 text-right">{{ "%.2f"|format(item.unit_price) }}</td>
-        <td class="px-3 py-2 text-right">{{ item.tax_rate }}%</td>
-        <td class="px-3 py-2 text-right">{{ "%.2f"|format(item.line_total) }}</td>
+        <td class="figure px-3 py-2 text-right">{{ item.quantity }}</td>
+        <td class="figure px-3 py-2 text-right">{{ "%.2f"|format(item.unit_price) }}</td>
+        <td class="figure px-3 py-2 text-right">{{ item.tax_rate }}%</td>
+        <td class="figure px-3 py-2 text-right">{{ "%.2f"|format(item.line_total) }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -50,24 +60,24 @@
 
   <div class="flex justify-end">
     <div class="w-64 space-y-1 text-sm">
-      <div class="flex justify-between"><span>Subtotal</span><span>{{ "%.2f"|format(invoice.subtotal) }}</span></div>
-      <div class="flex justify-between"><span>Tax</span><span>{{ "%.2f"|format(invoice.tax_total) }}</span></div>
-      <div class="flex justify-between"><span>Discount ({{ invoice.discount_percent }}%)</span><span>-{{ "%.2f"|format(invoice.discount_amount) }}</span></div>
-      <div class="flex justify-between font-bold text-base border-t pt-1"><span>Total</span><span>{{ "%.2f"|format(invoice.total) }}</span></div>
+      <div class="flex justify-between"><span>Subtotal</span><span class="figure">{{ "%.2f"|format(invoice.subtotal) }}</span></div>
+      <div class="flex justify-between"><span>Tax</span><span class="figure">{{ "%.2f"|format(invoice.tax_total) }}</span></div>
+      <div class="flex justify-between"><span>Discount ({{ invoice.discount_percent }}%)</span><span class="figure">-{{ "%.2f"|format(invoice.discount_amount) }}</span></div>
+      <div class="flex justify-between font-semibold text-base border-t border-line pt-1"><span>Total</span><span class="figure">{{ "%.2f"|format(invoice.total) }}</span></div>
     </div>
   </div>
 
   {% if invoice.notes %}
-  <p class="mt-6 text-sm text-gray-600"><b>Notes:</b> {{ invoice.notes }}</p>
+  <p class="mt-6 text-sm text-ink-soft"><b class="text-ink">Notes:</b> {{ invoice.notes }}</p>
   {% endif %}
 </div>
 
-<div class="bg-white rounded shadow p-6">
-  <p class="text-sm font-medium mb-2">Status: <span class="capitalize">{{ invoice.status }}</span></p>
+<div class="bg-surface rounded-lg border border-line p-6">
+  <p class="text-sm font-medium mb-3">Update status</p>
   <form method="POST" action="{{ url_for('main.update_invoice_status', invoice_id=invoice.id) }}" class="flex gap-2">
-    <button name="status" value="paid" class="bg-green-600 text-white px-3 py-1.5 rounded text-sm">Mark paid</button>
-    <button name="status" value="unpaid" class="bg-yellow-500 text-white px-3 py-1.5 rounded text-sm">Mark unpaid</button>
-    <button name="status" value="overdue" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm">Mark overdue</button>
+    <button name="status" value="paid" class="bg-ledger text-white px-3 py-1.5 rounded-md text-sm font-medium">Mark paid</button>
+    <button name="status" value="unpaid" class="bg-gold text-white px-3 py-1.5 rounded-md text-sm font-medium">Mark unpaid</button>
+    <button name="status" value="overdue" class="bg-rust text-white px-3 py-1.5 rounded-md text-sm font-medium">Mark overdue</button>
   </form>
 </div>
 {% endblock %}

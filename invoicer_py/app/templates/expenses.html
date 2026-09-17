@@ -2,41 +2,41 @@
 {% block title %}Expenses — Invoicer{% endblock %}
 {% block content %}
 <div class="flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-bold">Expenses</h1>
-  <a href="{{ url_for('main.new_expense') }}" class="bg-gray-900 text-white px-4 py-2 rounded text-sm">+ Record expense</a>
+  <h1 class="font-display text-2xl font-semibold">Expenses</h1>
+  <a href="{{ url_for('main.new_expense') }}" class="bg-ink text-paper px-4 py-2 rounded-md text-sm font-medium">+ Record expense</a>
 </div>
 
 <form method="GET" class="flex gap-3 mb-4">
-  <input type="text" name="q" value="{{ q }}" placeholder="Search description..." class="border rounded px-3 py-2 w-72">
-  <select name="category" class="border rounded px-3 py-2">
+  <input type="text" name="q" value="{{ q }}" placeholder="Search description..." class="border border-line rounded-md px-3 py-2 w-72 bg-surface">
+  <select name="category" class="border border-line rounded-md px-3 py-2 bg-surface">
     <option value="">All categories</option>
     {% for c in categories %}
     <option value="{{ c }}" {% if category == c %}selected{% endif %}>{{ c }}</option>
     {% endfor %}
   </select>
-  <button class="bg-gray-200 px-4 py-2 rounded text-sm">Filter</button>
+  <button class="bg-paper-alt px-4 py-2 rounded-md text-sm">Filter</button>
 </form>
 
-<div class="bg-white rounded shadow overflow-hidden">
+<div class="bg-surface rounded-lg border border-line overflow-hidden">
   <table class="w-full text-sm">
-    <thead class="bg-gray-100 text-left">
+    <thead class="bg-paper-alt text-left">
       <tr>
-        <th class="px-4 py-2">Date</th>
-        <th class="px-4 py-2">Category</th>
-        <th class="px-4 py-2">Description</th>
-        <th class="px-4 py-2 text-right">Amount</th>
+        <th class="px-4 py-2 font-medium text-ink-soft">Date</th>
+        <th class="px-4 py-2 font-medium text-ink-soft">Category</th>
+        <th class="px-4 py-2 font-medium text-ink-soft">Description</th>
+        <th class="px-4 py-2 font-medium text-ink-soft text-right">Amount</th>
       </tr>
     </thead>
     <tbody>
       {% for e in expenses %}
-      <tr class="border-t">
-        <td class="px-4 py-2">{{ e.date }}</td>
+      <tr class="border-t border-line">
+        <td class="figure px-4 py-2">{{ e.date }}</td>
         <td class="px-4 py-2">{{ e.category }}</td>
         <td class="px-4 py-2">{{ e.description or "-" }}</td>
-        <td class="px-4 py-2 text-right">{{ "%.2f"|format(e.amount) }}</td>
+        <td class="figure px-4 py-2 text-right text-rust">{{ "%.2f"|format(e.amount) }}</td>
       </tr>
       {% else %}
-      <tr><td class="px-4 py-4 text-gray-400" colspan="4">No expenses recorded yet.</td></tr>
+      <tr><td class="px-4 py-4 text-ink-soft" colspan="4">No expenses recorded yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>

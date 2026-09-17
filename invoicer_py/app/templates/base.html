@@ -4,23 +4,88 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Invoicer{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: '#F7F5F0',
+            'paper-alt': '#EFEAE0',
+            ink: '#14213D',
+            'ink-soft': '#57607A',
+            surface: '#FFFFFF',
+            line: '#E1DACB',
+            ledger: '#1F6F54',
+            'ledger-soft': '#E3F1EC',
+            gold: '#B8892F',
+            'gold-soft': '#FBF1DE',
+            rust: '#A3402E',
+            'rust-soft': '#F6E6E1',
+          },
+          fontFamily: {
+            display: ['"Space Grotesk"', 'sans-serif'],
+            body: ['Manrope', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Manrope', sans-serif; }
+    h1, h2, h3, .font-display { font-family: 'Space Grotesk', sans-serif; }
+    .figure { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+    *:focus-visible { outline: 2px solid #14213D; outline-offset: 2px; }
+
+    /* Rubber-stamp status mark: an invoice actually gets stamped in real life */
+    .stamp {
+      display: inline-flex;
+      align-items: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.06em;
+      padding: 0.3rem 0.85rem;
+      border: 2.5px solid currentColor;
+      border-radius: 3px;
+      transform: rotate(-4deg);
+      position: relative;
+    }
+    .stamp::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border: 1px solid currentColor;
+      border-radius: 2px;
+      opacity: 0.5;
+    }
+  </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+<body class="bg-paper text-ink min-h-screen flex flex-col">
   {% if current_user.is_authenticated %}
-  <nav class="bg-gray-900 text-white px-6 py-3 flex items-center justify-between">
+  <nav class="bg-ink text-paper px-6 py-3 flex items-center justify-between">
     <div class="flex items-center gap-6">
-      <a href="{{ url_for('main.dashboard') }}" class="font-bold text-lg">Invoicer</a>
-      <a href="{{ url_for('main.quick_sale') }}" class="text-sm bg-green-600 px-2 py-1 rounded text-white hover:bg-green-500">⚡ Quick Sale</a>
-      <a href="{{ url_for('main.dashboard') }}" class="text-sm text-gray-300 hover:text-white">Dashboard</a>
-      <a href="{{ url_for('main.customers') }}" class="text-sm text-gray-300 hover:text-white">Customers</a>
-      <a href="{{ url_for('main.products') }}" class="text-sm text-gray-300 hover:text-white">Products</a>
-      <a href="{{ url_for('main.invoices') }}" class="text-sm text-gray-300 hover:text-white">Invoices</a>
-      <a href="{{ url_for('main.expenses') }}" class="text-sm text-gray-300 hover:text-white">Expenses</a>
+      <a href="{{ url_for('main.dashboard') }}" class="flex items-center gap-2 font-display font-semibold text-lg">
+        <span class="w-6 h-6 bg-gold rounded-sm flex items-center justify-center text-ink text-sm font-bold">I</span>
+        Invoicer
+      </a>
+      <a href="{{ url_for('main.quick_sale') }}" class="text-sm bg-ledger px-3 py-1.5 rounded-full text-white font-medium hover:bg-ledger/90">⚡ Quick Sale</a>
+      <a href="{{ url_for('main.dashboard') }}" class="text-sm text-paper/60 hover:text-paper">Dashboard</a>
+      <a href="{{ url_for('main.customers') }}" class="text-sm text-paper/60 hover:text-paper">Customers</a>
+      <a href="{{ url_for('main.products') }}" class="text-sm text-paper/60 hover:text-paper">Products</a>
+      <a href="{{ url_for('main.invoices') }}" class="text-sm text-paper/60 hover:text-paper">Invoices</a>
+      <a href="{{ url_for('main.expenses') }}" class="text-sm text-paper/60 hover:text-paper">Expenses</a>
     </div>
     <div class="flex items-center gap-4 text-sm">
-      <span class="text-gray-400">{{ current_user.name }}</span>
-      <a href="{{ url_for('auth.logout') }}" class="text-gray-300 hover:text-white">Logout</a>
+      <span class="text-paper/50">{{ current_user.name }}</span>
+      <a href="{{ url_for('auth.logout') }}" class="text-paper/60 hover:text-paper">Logout</a>
     </div>
   </nav>
   {% endif %}
@@ -30,8 +95,8 @@
       {% if messages %}
         <div class="mb-6 space-y-2">
           {% for category, message in messages %}
-            <div class="px-4 py-2 rounded text-sm
-              {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-green-100 text-green-700 {% endif %}">
+            <div class="px-4 py-2 rounded text-sm border
+              {% if category == 'error' %} bg-rust-soft text-rust border-rust/20 {% else %} bg-ledger-soft text-ledger border-ledger/20 {% endif %}">
               {{ message }}
             </div>
           {% endfor %}

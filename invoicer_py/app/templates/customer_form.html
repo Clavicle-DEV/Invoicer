@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Add Customer — Invoicer{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-bold mb-6">Add customer</h1>
-<form method="POST" class="bg-white p-6 rounded shadow max-w-lg space-y-4">
+<h1 class="font-display text-2xl font-semibold mb-6">Add customer</h1>
+<form method="POST" class="bg-surface p-6 rounded-lg border border-line max-w-lg space-y-4">
   <div>
     <label class="block text-sm font-medium mb-1">Name</label>
-    <input type="text" name="name" required class="w-full border rounded px-3 py-2">
+    <input type="text" name="name" required class="w-full border border-line rounded-md px-3 py-2 bg-surface focus:border-ink outline-none">
   </div>
   <div>
     <label class="block text-sm font-medium mb-1">Email</label>
-    <input type="email" name="email" class="w-full border rounded px-3 py-2">
+    <input type="email" name="email" class="w-full border border-line rounded-md px-3 py-2 bg-surface focus:border-ink outline-none">
   </div>
   <div>
     <label class="block text-sm font-medium mb-1">Phone</label>
-    <input type="text" name="phone" class="w-full border rounded px-3 py-2">
+    <input type="text" name="phone" class="w-full border border-line rounded-md px-3 py-2 bg-surface focus:border-ink outline-none">
   </div>
   <div>
     <label class="block text-sm font-medium mb-1">Address</label>
-    <textarea name="address" class="w-full border rounded px-3 py-2"></textarea>
+    <textarea name="address" class="w-full border border-line rounded-md px-3 py-2 bg-surface focus:border-ink outline-none"></textarea>
   </div>
-  <button type="submit" class="bg-gray-900 text-white px-4 py-2 rounded">Save customer</button>
+  <button type="submit" class="bg-ink text-paper px-4 py-2 rounded-md font-medium">Save customer</button>
 </form>
 {% endblock %}

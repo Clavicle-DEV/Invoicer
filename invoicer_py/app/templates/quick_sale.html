@@ -2,26 +2,26 @@
 {% block title %}Quick Sale — Invoicer{% endblock %}
 {% block content %}
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-2xl font-bold">Quick Sale</h1>
-  <p class="text-sm text-gray-500">Tap an item, or speak the order when your hands are full.</p>
+  <h1 class="font-display text-2xl font-semibold">Quick Sale</h1>
+  <p class="text-sm text-ink-soft">Tap an item, or speak the order when your hands are full.</p>
 </div>
 
-<div id="voice-panel" class="bg-white rounded-lg shadow p-4 mb-6 hidden">
+<div id="voice-panel" class="bg-surface rounded-lg border border-line p-4 mb-6 hidden">
   <div class="flex items-center justify-between mb-2">
     <h2 class="font-semibold text-sm">🎤 Voice order</h2>
-    <button id="voice-btn" type="button" class="bg-gray-900 text-white px-4 py-1.5 rounded text-sm">
+    <button id="voice-btn" type="button" class="bg-ink text-paper px-4 py-1.5 rounded-md text-sm font-medium">
       Start listening
     </button>
   </div>
-  <p id="voice-status" class="text-xs text-gray-400 mb-2">Try: "two sugars, one milk, and one bread"</p>
-  <p id="voice-transcript" class="text-sm text-gray-700 italic min-h-[1.5rem]"></p>
+  <p id="voice-status" class="text-xs text-ink-soft mb-2">Try: "two sugars, one milk, and one bread"</p>
+  <p id="voice-transcript" class="text-sm text-ink italic min-h-[1.5rem]"></p>
 
-  <div id="voice-review" class="hidden mt-3 border-t pt-3">
-    <p class="text-xs text-gray-500 mb-2">Heard this — check it's right before adding:</p>
+  <div id="voice-review" class="hidden mt-3 border-t border-line pt-3">
+    <p class="text-xs text-ink-soft mb-2">Heard this — check it's right before adding:</p>
     <div id="voice-review-list" class="space-y-2 mb-3"></div>
     <div class="flex gap-2">
-      <button id="voice-add-btn" class="bg-green-600 text-white px-3 py-1.5 rounded text-sm">Add to cart</button>
-      <button id="voice-discard-btn" class="text-sm text-gray-500 hover:text-red-600">Discard</button>
+      <button id="voice-add-btn" class="bg-ledger text-white px-3 py-1.5 rounded-md text-sm font-medium">Add to cart</button>
+      <button id="voice-discard-btn" class="text-sm text-ink-soft hover:text-rust">Discard</button>
     </div>
   </div>
 </div>
@@ -33,26 +33,26 @@
       {% for p in products %}
       <button
         type="button"
-        class="product-tile bg-white border rounded-lg p-4 text-left hover:border-gray-900 hover:shadow transition"
+        class="product-tile bg-surface border border-line rounded-lg p-4 text-left hover:border-ink transition"
         data-id="{{ p.id }}"
         data-name="{{ p.name }}"
         data-price="{{ p.unit_price }}"
         data-tax="{{ p.tax_rate }}"
       >
         <p class="font-medium">{{ p.name }}</p>
-        <p class="text-sm text-gray-500">{{ "%.2f"|format(p.unit_price) }}</p>
+        <p class="figure text-sm text-ink-soft">{{ "%.2f"|format(p.unit_price) }}</p>
       </button>
       {% endfor %}
     </div>
   </div>
 
   <!-- Cart -->
-  <div class="bg-white rounded-lg shadow p-4 h-fit sticky top-4">
-    <h2 class="font-semibold mb-3">Current sale</h2>
+  <div class="bg-surface rounded-lg border border-line p-4 h-fit sticky top-4">
+    <h2 class="font-display font-semibold mb-3">Current sale</h2>
 
     <div>
-      <label class="block text-xs text-gray-500 mb-1">Customer (optional — defaults to Walk-in)</label>
-      <select id="customer-select" class="w-full border rounded px-2 py-1.5 text-sm mb-3">
+      <label class="block text-xs text-ink-soft mb-1">Customer (optional — defaults to Walk-in)</label>
+      <select id="customer-select" class="w-full border border-line rounded-md px-2 py-1.5 text-sm mb-3 bg-surface">
         <option value="">Walk-in customer</option>
         {% for c in customers %}
           {% if c.name != "Walk-in Customer" %}
@@ -63,19 +63,19 @@
     </div>
 
     <div id="cart-items" class="space-y-2 mb-4 max-h-80 overflow-y-auto">
-      <p id="cart-empty" class="text-sm text-gray-400">No items yet — tap a product.</p>
+      <p id="cart-empty" class="text-sm text-ink-soft">No items yet — tap a product.</p>
     </div>
 
-    <div class="border-t pt-3 flex justify-between font-bold mb-4">
+    <div class="border-t border-line pt-3 flex justify-between font-semibold mb-4">
       <span>Total</span>
-      <span id="cart-total">0.00</span>
+      <span id="cart-total" class="figure">0.00</span>
     </div>
 
     <button id="checkout-btn" disabled
-      class="w-full bg-gray-900 text-white py-2.5 rounded font-medium disabled:opacity-40">
+      class="w-full bg-ledger text-white py-2.5 rounded-md font-medium disabled:opacity-40">
       Complete sale
     </button>
-    <button id="clear-btn" class="w-full mt-2 text-sm text-gray-500 hover:text-red-600">Clear cart</button>
+    <button id="clear-btn" class="w-full mt-2 text-sm text-ink-soft hover:text-rust">Clear cart</button>
 
     <div id="last-sale" class="mt-4 text-sm hidden"></div>
   </div>
@@ -105,16 +105,16 @@
       total += lineTotal(item);
 
       const row = document.createElement('div');
-      row.className = 'cart-row flex items-center justify-between text-sm bg-gray-50 rounded px-2 py-1.5';
+      row.className = 'cart-row flex items-center justify-between text-sm bg-paper-alt rounded px-2 py-1.5';
       row.innerHTML = `
         <div>
           <p class="font-medium">${item.name}</p>
           <p class="text-gray-500">${item.qty} × ${item.price.toFixed(2)}</p>
         </div>
         <div class="flex items-center gap-2">
-          <button class="qty-btn px-2 bg-gray-200 rounded" data-id="${id}" data-delta="-1">−</button>
-          <button class="qty-btn px-2 bg-gray-200 rounded" data-id="${id}" data-delta="1">+</button>
-          <button class="remove-btn text-red-500 ml-1" data-id="${id}">✕</button>
+          <button class="qty-btn px-2 bg-line rounded" data-id="${id}" data-delta="-1">−</button>
+          <button class="qty-btn px-2 bg-line rounded" data-id="${id}" data-delta="1">+</button>
+          <button class="remove-btn text-rust ml-1" data-id="${id}">✕</button>
         </div>
       `;
       cartItemsEl.appendChild(row);
@@ -187,12 +187,12 @@
       }
 
       lastSaleEl.innerHTML = `
-        <div class="bg-green-50 border border-green-200 rounded p-3">
-          <p class="font-medium text-green-800">Sale recorded — ${result.invoice_number}</p>
-          <p class="text-green-700">${result.customer_name} · Total ${result.total.toFixed(2)}</p>
+        <div class="bg-ledger-soft border border-ledger/20 rounded-md p-3">
+          <p class="font-display font-semibold text-ledger">Sale recorded — ${result.invoice_number}</p>
+          <p class="text-ledger figure">${result.customer_name} · Total ${result.total.toFixed(2)}</p>
           <div class="mt-2 flex gap-3">
-            <a href="${result.pdf_url}" target="_blank" class="text-blue-600 hover:underline">Download receipt</a>
-            <a href="${result.detail_url}" class="text-blue-600 hover:underline">View invoice</a>
+            <a href="${result.pdf_url}" target="_blank" class="text-ink hover:underline font-medium">Download receipt</a>
+            <a href="${result.detail_url}" class="text-ink hover:underline font-medium">View invoice</a>
           </div>
         </div>`;
       lastSaleEl.classList.remove('hidden');
@@ -364,7 +364,7 @@
       ).join('');
       row.innerHTML = `
         <span class="w-10 text-gray-500">×${item.qty}</span>
-        <span class="w-28 ${item.product ? '' : 'text-red-500'}">${item.product ? '' : '"' + item.candidateText + '" — pick:'}</span>
+        <span class="w-28 ${item.product ? '' : 'text-rust'}">${item.product ? '' : '"' + item.candidateText + '" — pick:'}</span>
         <select data-idx="${idx}" class="voice-product-select border rounded px-2 py-1 flex-1">
           <option value="">Skip this item</option>
           ${options}
